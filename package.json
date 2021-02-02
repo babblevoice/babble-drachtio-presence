@@ -1,0 +1,31 @@
+{
+  "name": "babble-drachtio-presence",
+  "version": "1.0.0",
+  "description": "A presence agent which will work with other modules in this family.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tinpotnick/babble-drachtio-presence.git"
+  },
+  "keywords": [
+    "SIP",
+    "Presence",
+    "Drachtio"
+  ],
+  "author": "Nick Knight",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tinpotnick/babble-drachtio-presence/issues"
+  },
+  "homepage": "https://github.com/tinpotnick/babble-drachtio-presence#readme",
+  "dependencies": {
+    "crypto": "^1.0.1",
+    "drachtio-mw-digest-auth": "^0.3.3",
+    "drachtio-mw-registration-parser": "^0.1.0",
+    "drachtio-srf": "^4.4.47",
+    "xml2js": "^0.4.23"
+  }
+}
