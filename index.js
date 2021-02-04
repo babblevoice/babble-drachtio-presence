@@ -17,6 +17,34 @@ const defaultoptions = {
   "subscribeonregister": true
 }
 
+/* Only created if we have a subscription to add */
+class SubscriptionCollection {
+  constructor( dialog ) {
+    this.subscriptions = [ dialog ]
+  }
+
+  add( dialog ) {
+    this.subscriptions.push( dialog )
+  }
+
+  remove( dialog ) {
+    let index = this.subscriptions.findIndex( ( sub ) => {
+      if( sub.id === dialog.id ) {
+        return true
+      }
+      return false
+    } )
+
+    if ( -1 !== index ) {
+      this.subscriptions.splice( index, 1 )
+    }
+  }
+
+  get size() {
+    return this.subscriptions.size()
+  }
+}
+
 
 class Presence {
   /*
@@ -33,28 +61,86 @@ class Presence {
       ...options
     }
 
-    this.authdigest = digestauth( {
-      proxy: true, /* 407 or 401 */
-      passwordLookup: options.passwordLookup
+    if( undefined === this.options.srf ) {
+      assert( "You must supply an SRF object" )
+      return
+    }
+
+    /*
+      Indexed by user@domain, each should then contain an array of subscriptions.
+      When we remove subscriptions,
+    */
+    this.subscriptions = new Map()
+
+    /*
+      This next section listen for SUBSCRIBE requests which we can auth then accept.
+      We then need to maintain a list of targets the request is asking for events for.
+
+      We allow a subscriber to subscribe to anything, but they simply may not get notifies
+      about stuff which is unnotifiable.
+    */
+    this.options.srf.use( "subscribe", ( req, res ) => {
+      if ( req.method !== "SUBSCRIBE" ) return next()
+
+      let toparts = parseuri( req.getParsedHeader( "To" ).uri )
+
+      digestauth( {
+        proxy: true, /* 407 or 401 */
+        passwordLookup: this.options.passwordLookup,
+        realm: toparts.host
+      } )( req, res, () => {
+        /* We have been authed */
+        let authedtoparts = parseuri( req.getParsedHeader( "To" ).uri )
+
+        this.options.srf.createUAS( req, res, {
+          headers: {
+             /* Be explicit - we might want to look at application/simple-message-summary also */
+             /* Also look at application/dialog-info+xml - it looks like much more detail. */
+            "Accept": "application/dialog-info+xml, application/xpidf+xml, application/pidf+xml"
+          }
+        } )
+          .then( ( dialog ) => {
+            let key = authedtoparts.user + "@" + authedtoparts.host
+            console.log( "We have accepted the subscribe " )
+
+            if( this.subscriptions.has( key ) ) {
+              this.subscriptions.get( key ).add( dialog )
+            } else {
+              this.subscriptions.set( key, new SubscriptionCollection( dialog ) )
+            }
+
+            dialog.on( "destroy", ( dialog ) => {
+
+              let subsc = this.subscriptions.get( key )
+              subc.remove( dialog )
+              if( 0 === subc.size ) {
+                this.subscriptions.delete( key )
+              }
+            } )
+          } )
+      } )
     } )
 
 
+    /*
+      This next section is listening to our registrar for registrations then
+      creating a subscription to that client to obtain state about the phone.
+    */
     if ( this.options.subscribeonregister &&
-          undefined !== this.options.registrar &&
-          undefined !== this.options.srf ) {
+          undefined !== this.options.registrar ) {
 
       this.options.registrar.on( "register", ( reg ) => {
+
+        if( !reg.initial ) {
+          /* This is a renewal of the reg so can be inored */
+          console.log( "REGISTER refresh - no new SUBSCRIBE needed" )
+          return
+        }
 
         if( !reg.allow.includes( "SUBSCRIBE" ) ) {
           console.log( "Client doesn't allow subscribing - so ignoring" )
           return
         }
-
-        let da = digestauth( {
-          proxy: true, /* 407 or 401 */
-          passwordLookup: options.passwordLookup,
-          realm: reg.authorization.realm
-        } )
 
         this.options.srf.createUAC( reg.contacts[ 0 ], {
           "method": "SUBSCRIBE",
@@ -69,7 +155,11 @@ class Presence {
 
           dialog.on( "notify", ( req, res ) => {
 
-            da( req, res, () => {
+            digestauth( {
+              proxy: true, /* 407 or 401 */
+              passwordLookup: this.options.passwordLookup,
+              realm: reg.authorization.realm
+            } )( req, res, () => {
               /* We are now authed */
               if( this.parsepidfxml( req, res ) ) {
                 res.send( 200 )
@@ -88,38 +178,20 @@ class Presence {
       } )
     }
 
-    this.options.srf.use( "subscribe", ( req, res ) => {
-      if ( req.method !== "SUBSCRIBE" ) return next()
-
-      let authed = false
-      this.authdigest( req, res, () => {
-        authed = true
-      } )
-      if ( !authed ) {
-        return
-      }
-
-      console.log( "We received a subscribe" )
-      this.options.srf.createUAS( req, res, {
-        headers: {
-           /* Be explicit - we might want to look at application/simple-message-summary also */
-           /* Also look at application/dialog-info+xml - it looks like much more detail. */
-          "Accept": "application/pidf+xml"
-        }
-      } )
-        .then( ( dialog ) => {
-          console.log( "We have accepted the subscribe " )
-        } )
-    } )
-
     this.options.srf.use( "publish", ( req, res, next ) => {
 
       if ( req.method !== "PUBLISH" ) return next()
 
-      this.authdigest( req, res, () => {
+      let toparts = parseuri( req.getParsedHeader( "To" ).uri )
+      digestauth( {
+        proxy: true, /* 407 or 401 */
+        passwordLookup: this.options.passwordLookup,
+        realm: toparts.host
+      } )( req, res, () => {
         if( this.parsepidfxml( req, res ) ) {
           let ifmatch = req.get( "sip-if-match" )
 
+          /* ifmatch references the e-tag we issued in the last 200 */
           res.send( 200, {
             headers: {
               "Expires": Math.min( req.get( "expires" ), 3600 ),
@@ -145,7 +217,7 @@ class Presence {
   */
   parsepidfxml( req, res ) {
     let ct = req.get( "Content-Type" )
-    let toparts = parseuri( req.getParsedHeader( "To" ).uri )
+    //let toparts = parseuri( req.getParsedHeader( "To" ).uri )
 
     let understood = false
     parseString( req.body, ( err, res ) => {
