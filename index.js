@@ -132,7 +132,7 @@ class Presence {
       this.options.registrar.on( "register", ( reg ) => {
 
         if( !reg.initial ) {
-          /* This is a renewal of the reg so can be inored */
+          /* This is a renewal of the reg so can be ignored */
           console.log( "REGISTER refresh - no new SUBSCRIBE needed" )
           return
         }
