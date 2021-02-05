@@ -9,7 +9,29 @@ const digestauth = require( "drachtio-mw-digest-auth" )
 
 const crypto = require( "crypto" )
 
-var parseString = require( "xml2js" ).parseString
+
+const xmlparser = require( "fast-xml-parser" )
+const he = require( "he" )
+const j2x = require( "fast-xml-parser" ).j2xParser
+
+const xmlparseroptions = {
+    attributeNamePrefix : "",
+    attrNodeName: "attr",
+    textNodeName : "#text",
+    ignoreAttributes : false,
+    ignoreNameSpace : false,
+    allowBooleanAttributes : false,
+    parseNodeValue : true,
+    parseAttributeValue : false,
+    trimValues: true,
+    cdataTagName: "__cdata",
+    cdataPositionChar: "\\c",
+    parseTrueNumberOnly: false,
+    arrayMode: false, //"strict"
+    attrValueProcessor: (val, attrName) => he.decode(val, {isAttributeValue: true}),//default is a=>a
+    tagValueProcessor : (val, tagName) => he.decode(val), //default is a=>a
+    stopNodes: ["parse-me-as-string"]
+}
 
 
 const defaultoptions = {
@@ -45,8 +67,79 @@ class SubscriptionCollection {
   }
 }
 
+let PrivatePresence = {}
 
 class Presence {
+
+  /*
+    This function is our creator function from RFC 4235.
+
+    <dialog-info xmlns="urn:ietf:params:xml:ns:dialog-info"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="urn:ietf:params:xml:ns:dialog-info"
+     version="1" state="full">
+    </dialog-info>
+
+    A dialog element is
+    <dialog id="123456">
+        <state>confirmed</state>
+        <duration>274</duration>
+        <local>
+          <identity display="Alice">sip:alice@example.com</identity>
+          <target uri="sip:alice@pc33.example.com"></target>
+        </local>
+        <remote>
+          <identity display="Bob">sip:bob@example.org</identity>
+          <target uri="sip:bobster@phone21.example.org"/>
+        </remote>
+     </dialog>
+  */
+  createdialoginfoxml() {
+    let di = {
+      "dialog-info": {
+        $: {
+          "xmlns": "urn:ietf:params:xml:ns:dialog-info",
+          "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
+          "xsi:schemaLocation": "urn:ietf:params:xml:ns:dialog-info",
+          "version": "1",
+          "state": "full"
+        },
+      }
+    }
+
+    let d = {
+      "dialog": {
+        $: { "id": "123" },
+        _: {
+          "state": "confirmed",
+          "duration": 274,
+          "local": {
+            "identity": {
+              $: {
+                "display": ""
+              },
+              _: ""
+            },
+            "target": {
+            }
+          },
+          "remote": {
+            "identity": {
+            },
+            "target": {
+            }
+          }
+        }
+      }
+    }
+
+    let xml = PrivatePresence.builder.buildObject( di )
+  }
+
+  sendnotify( user, realm, callinfo ) {
+
+  }
+
   /*
     As well as options referenced in default options
 
@@ -121,7 +214,6 @@ class Presence {
       } )
     } )
 
-
     /*
       This next section is listening to our registrar for registrations then
       creating a subscription to that client to obtain state about the phone.
@@ -161,7 +253,19 @@ class Presence {
               realm: reg.authorization.realm
             } )( req, res, () => {
               /* We are now authed */
-              if( this.parsepidfxml( req, res ) ) {
+              let s = this.parsepidfxml( req.get( "Content-Type" ), req.body )
+              if( false === s ) {
+                res.send( 400 /* Bad request - or at least we don't understand it */ )
+              } else {
+
+                this.em.emit( "presence", {
+                  ...s,
+                  ...{
+                    "username": req.authorization.username,
+                    "realm": req.authorization.realm,
+                  }
+                } )
+
                 res.send( 200 )
               }
             } )
@@ -188,9 +292,19 @@ class Presence {
         passwordLookup: this.options.passwordLookup,
         realm: toparts.host
       } )( req, res, () => {
-        if( this.parsepidfxml( req, res ) ) {
-          let ifmatch = req.get( "sip-if-match" )
+        let pub = this.parsepidfxml( req.get( "Content-Type" ), req.body )
+        if( false === pub ) {
+          res.send( 400 /* Bad request - or at least we don't understand it */ )
+        } else {
+          this.em.emit( "presence", {
+            ...pub,
+            ...{
+              "username": req.authorization.username,
+              "realm": req.authorization.realm,
+            }
+          } )
 
+          let ifmatch = req.get( "sip-if-match" )
           /* ifmatch references the e-tag we issued in the last 200 */
           res.send( 200, {
             headers: {
@@ -210,63 +324,29 @@ class Presence {
   }
 
   /*
-    Not all clients set the To field correctly. So we have to use the auth
-    credentials instead which we can rely on.
-
-    req.authorization.username, req.authorization.realm
+    contenttype ENUM{ "application/pidf+xml", "application/xpidf+xml" }
+    Then the xml is parsed for the informatin in the relavent place.
   */
-  parsepidfxml( req, res ) {
-    let ct = req.get( "Content-Type" )
-    //let toparts = parseuri( req.getParsedHeader( "To" ).uri )
+  parsepidfxml( contenttype, xml ) {
 
-    let understood = false
-    parseString( req.body, ( err, res ) => {
-      if( undefined !== res ) {
-        if( "application/pidf+xml" === ct ) {
+    let xpidobj = xmlparser.parse( xml, xmlparseroptions )
 
-          /*
-            Tested with Zoiper5
-            Notes, when the mouse leaves Zoiper (on Linux) we get a note of 'Away'
-            So, the previous note matters. If you set the status to Busy then we get
-            'Busy' followed by 'Away' (in seperate messages) as the mouse leaves
-            the application.
-          */
+    if( typeof xpidobj === 'object' && xpidobj !== null ) {
+      if( "application/pidf+xml" === contenttype ) {
+        return {
+          "status": xpidobj.presence.tuple.status.basic,
+          "note": xpidobj.presence.tuple.note
+        }
+      } else if ( "application/xpidf+xml" === contenttype ) {
 
-          this.em.emit( "presence", {
-            "username": req.authorization.username,
-            "realm": req.authorization.realm,
-            "status": res.presence.tuple[ 0 ].status[ 0 ].basic[ 0 ],
-            "note": res.presence.tuple[ 0 ].note[ 0 ]
-          } )
-
-          understood = true
-
-        } else if ( "application/xpidf+xml" === ct ) {
-          /*
-            Tested with Polycom VVX 101 5.9.5.0614
-            status = 'open'
-            substatus= 'online'
-
-            When DND is enabled
-          */
-          this.em.emit( "presence", {
-            "username": req.authorization.username,
-            "realm": req.authorization.realm,
-            "status": res.presence.atom[ 0 ].address[ 0 ].status[ 0 ][ "$" ].status,
-            "note": res.presence.atom[ 0 ].address[ 0 ].msnsubstatus[ 0 ][ "$" ].substatus
-          } )
-
-          understood = true
+        return {
+          "status": xpidobj.presence.atom.address.status.attr.status,
+          "note": xpidobj.presence.atom.address.msnsubstatus.attr.substatus
         }
       }
-    } )
-
-    if( !understood ) {
-      res.send( 400 /* Bad request - or at least we don't understand it */ )
-      return false
     }
 
-    return true
+    return false
   }
 }
 

@@ -4,7 +4,7 @@
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/test.js"
   },
   "repository": {
     "type": "git",
@@ -25,6 +25,7 @@
     "crypto": "^1.0.1",
     "drachtio-mw-digest-auth": "^0.3.3",
     "drachtio-srf": "^4.4.47",
-    "xml2js": "^0.4.23"
+    "fast-xml-parser": "^3.18.0",
+    "he": "^1.2.0"
   }
 }
