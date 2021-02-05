@@ -263,6 +263,7 @@ class Presence {
                   ...{
                     "username": req.authorization.username,
                     "realm": req.authorization.realm,
+                    "source": "NOTIFY"
                   }
                 } )
 
@@ -301,6 +302,7 @@ class Presence {
             ...{
               "username": req.authorization.username,
               "realm": req.authorization.realm,
+              "source": "PUBLISH"
             }
           } )
 
