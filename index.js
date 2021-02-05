@@ -39,7 +39,12 @@ const defaultoptions = {
   "subscribeonregister": true
 }
 
-/* Only created if we have a subscription to add */
+/*
+Store Subscriptions from clients (the client is the subscriber).
+This means we need to store the dialog against the callid and
+entity.
+Only created if we have a subscription to add.
+*/
 class SubscriptionCollection {
   constructor( dialog ) {
     this.subscriptions = [ dialog ]
@@ -67,7 +72,54 @@ class SubscriptionCollection {
   }
 }
 
+/*
+Store dialogs per registeration.
+*/
+class RegSubscription {
+  constructor( dialog ) {
+    this.dialog = dialog
+  }
+}
+
 let PrivatePresence = {}
+/*
+  Indexed by user@domain, each should then contain an array of subscriptions.
+  When we remove subscriptions,
+*/
+PrivatePresence.subscriptions = new Map()
+
+PrivatePresence.addregsub = function( reg, dialog ) {
+  PrivatePresence.subscribeperregister.set( reg.uuid, new RegSubscription( dialog ) )
+}
+
+PrivatePresence.deleteregsub = function( reg ) {
+  PrivatePresence.subscribeperregister.delete( reg.uuid )
+}
+
+PrivatePresence.refreshregsub = function( reg ) {
+  if( PrivatePresence.subscribeperregister.has( reg.uuid ) ) {
+    let sub = PrivatePresence.subscribeperregister.get( reg.uuid )
+
+    let opts = {
+      "method": "SUBSCRIBE",
+      "headers": {
+        "Event": "presence",
+        "Expires": reg.expiresin,
+        "Accept": "application/dialog-info+xml, application/xpidf+xml, application/pidf+xml"
+      }
+    }
+
+    sub.dialog.request( opts )
+      .then( () => {
+        console.log( "Wahoo - refreshed subscription" )
+      } )
+      .catch( () => {
+        console.log( "Bad things be here" )
+      } )
+  }
+
+  return false
+}
 
 class Presence {
 
@@ -160,12 +212,6 @@ class Presence {
     }
 
     /*
-      Indexed by user@domain, each should then contain an array of subscriptions.
-      When we remove subscriptions,
-    */
-    this.subscriptions = new Map()
-
-    /*
       This next section listen for SUBSCRIBE requests which we can auth then accept.
       We then need to maintain a list of targets the request is asking for events for.
 
@@ -196,18 +242,18 @@ class Presence {
             let key = authedtoparts.user + "@" + authedtoparts.host
             console.log( "We have accepted the subscribe " )
 
-            if( this.subscriptions.has( key ) ) {
-              this.subscriptions.get( key ).add( dialog )
+            if( PrivatePresence.subscriptions.has( key ) ) {
+              PrivatePresence.subscriptions.get( key ).add( dialog )
             } else {
-              this.subscriptions.set( key, new SubscriptionCollection( dialog ) )
+              PrivatePresence.subscriptions.set( key, new SubscriptionCollection( dialog ) )
             }
 
             dialog.on( "destroy", ( dialog ) => {
 
-              let subsc = this.subscriptions.get( key )
+              let subsc = PrivatePresence.subscriptions.get( key )
               subc.remove( dialog )
               if( 0 === subc.size ) {
-                this.subscriptions.delete( key )
+                PrivatePresence.subscriptions.delete( key )
               }
             } )
           } )
@@ -221,16 +267,20 @@ class Presence {
     if ( this.options.subscribeonregister &&
           undefined !== this.options.registrar ) {
 
+      PrivatePresence.subscribeperregister = new Map()
+
       this.options.registrar.on( "register", ( reg ) => {
 
-        if( !reg.initial ) {
-          /* This is a renewal of the reg so can be ignored */
-          console.log( "REGISTER refresh - no new SUBSCRIBE needed" )
-          return
-        }
+        console.log( reg )
 
         if( !reg.allow.includes( "SUBSCRIBE" ) ) {
           console.log( "Client doesn't allow subscribing - so ignoring" )
+          return
+        }
+
+        if( !reg.initial ) {
+          /* This is a renewal of the reg so can be used to trigger refresh on sub dialog */
+          PrivatePresence.refreshregsub( reg )
           return
         }
 
@@ -243,7 +293,12 @@ class Presence {
           }
         } ).then( ( dialog ) => {
 
-          dialog.on( "destroy", () => console.log( "Remote party ended subscribe dialog" ) )
+          PrivatePresence.addregsub( reg, dialog )
+
+          dialog.on( "destroy", () => {
+            PrivatePresence.deleteregsub( reg )
+            console.log( "Remote party ended subscribe dialog" )
+          } )
 
           dialog.on( "notify", ( req, res ) => {
 
