@@ -2,9 +2,7 @@
 "use strict"
 
 const assert = require( "assert" )
-
-const presence = require( "../index.js" )
-const p = new presence( {} )
+const presence = require( "../lib/presencedocument.js" )
 
 const zoiper5publish = `<?xml version="1.0" encoding="UTF-8"?>
 <presence xmlns="urn:ietf:params:xml:ns:pidf"
@@ -15,7 +13,7 @@ entity="sip:1000@bling.babblevoice.com;transport=UDP">
 </tuple>
 </presence>`
 
-let zoip = p.parsepidfxml( "application/pidf+xml", zoiper5publish )
+let zoip = presence.parsepidfxml( "application/pidf+xml", zoiper5publish )
 
 assert( zoip.status === "open" )
 assert( zoip.note === "Online" )
@@ -35,16 +33,57 @@ PUBLIC "-//IETF//DTD RFCxxxx XPIDF 1.0//EN" "xpidf.dtd">
 </presence>`
 
 
-let poly = p.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
+let poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
 
 assert( poly.status === "open" )
 assert( poly.note === "online" )
 
-/*
-console.log( xmlparser.parse( `<a id="33">hello</a>`, xmlparseroptions ) )
 
-{ a: { '#text': 'hello', attr: { '@_id': '' } } }
+let d = {
+  "dialog": {
+    "attr": { "id": "123" },
+    "state": "confirmed",
+    "duration": "274",
+    "local": {
+      "identity": {
+        "attr": {
+          "display": "Alice"
+        },
+        "#text": "sip:alice@example.com"
+      },
+      "target": {
+        "attr": {
+          "uri": "sip:bobster@phone21.example.org"
+        }
+      }
+    },
+    "remote": {
+      "identity": {
+        "attr": {
+            "display": "Bob"
+        },
+        "#text": "sip:bob@example.org"
+      },
+      "target": {
+        "attr": {
+          "uri": "ip:bobster@phone21.example.org"
+        }
+      }
+    }
+  }
+}
 
-var j2xobj = new j2x(xmlparseroptions)
-console.log( j2xobj.parse( { a: { '#text': 'hello', attr: { '@_id': '' } } } ) )
-*/
+const xmlexample = `<dialog id="123456">
+    <state>confirmed</state>
+    <duration>274</duration>
+    <local>
+      <identity display="Alice">sip:alice@example.com</identity>
+      <target uri="sip:alice@pc33.example.com"></target>
+    </local>
+    <remote>
+      <identity display="Bob">sip:bob@example.org</identity>
+      <target uri="sip:bobster@phone21.example.org"/>
+    </remote>
+ </dialog>`
+
+ //console.log( JSON.stringify( p.xmltoobj( xmlexample ) ) )

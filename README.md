@@ -14,6 +14,8 @@ I have looked at the documents we are provided with by clients and they are
 * application/pidf+xml
 * application/xpidf+xml (although I am not sure if this is a Polycom specific thing)
 * application/dialog-info+xml
+* application/simple-message-summary - [RFC 3842](https://tools.ietf.org/html/rfc3842)
+* application/watcherinfo+xml - [RFC 3842](https://tools.ietf.org/html/rfc3842) - I am not oing to support this just yet
 
 We can use presence information and our own tracking of calls ourselves to publish information dialog information via NOTIFY to all SUBSCRIPTIONS clients agree with us.
 
@@ -24,3 +26,4 @@ We can use presence information and our own tracking of calls ourselves to publi
 * Presence Information Data Format (PIDF) [RFC 3863](https://tools.ietf.org/html/rfc3863)
 * An INVITE-Initiated Dialog Event Package for the Session Initiation Protocol (SIP) - [RFC 4235](https://tools.ietf.org/html/rfc4235)
 * SIP-Specific Event Notification - [RFC 6665](https://tools.ietf.org/html/rfc6665)
+* SIP Message Waiting [RFC 3842](https://tools.ietf.org/html/rfc3842)
