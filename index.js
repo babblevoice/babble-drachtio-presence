@@ -67,6 +67,12 @@ class Presence {
   on( ev, cb ) {
     this.options.em.on( ev, cb )
   }
+
+  /* Notify SUBSCRIBERs of this mailbox of Voicemail, actual
+  stats will come from options.voicemailLookup callback.  */
+  voicemail( entity ) {
+    onsubscribe.voicemail( entity )
+  }
 }
 
 
