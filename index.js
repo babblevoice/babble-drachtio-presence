@@ -10,7 +10,15 @@ const dosubscribe = require( "./lib/dosubscribe" )
 
 const defaultoptions = {
   /* When a client registers - we subsribe to their status if they support it */
-  "subscribeonregister": true
+  "subscribeonregister": true,
+  "voicemailLookup": ( entity, cb ) => {
+    /* entity example 1000@bling.babblevoice.com */
+    var newount = 0
+    var oldcount = 0
+    var newurgent = 0
+    var oldurgent = 0
+    cb( newount, oldcount, newurgent, oldurgent )
+  }
 }
 
 class Presence {
