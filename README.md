@@ -29,14 +29,12 @@ babble-drachtio-presence emits a "subscribe" event with a contenttype of "applic
 
 ```json
 {
-  "id": 123,
   "contenttype": "application/simple-message-summary",
   "entity": "1000@bling.babblevoice.com",
   "expires": 60
 }
 ```
 
-* id references the dialog id, this should be used if a responce is generated specific to this event.
 * contenttype contains the content type which the subscription has asked for
   * "application/simple-message-summary": voicemail
   * "application/pidf+xml": status
@@ -45,15 +43,14 @@ babble-drachtio-presence emits a "subscribe" event with a contenttype of "applic
 * entity is what the subscriber is subscribing to
 * expires...
 
-This is only fired when a new subscription is generated. When existing subscriptions are refreshed this is not fired. To conform to RFC these events must be responded to. Otherwise the initial NOTIFY which is a requirement is not sent. It is only fired to query the initial status. If we already have a status for that event type it will not be fired.
+This is only fired when a new subscription is generated. When existing subscriptions are refreshed this is not fired. To conform to RFC these events must be responded to. Otherwise the initial NOTIFY which is a requirement is not sent. It is only fired to query the initial status for that entity. If we already have a status for that event type it will not be fired.
 
 ### Voicemail
 
-Once the subscriptions event for voicemail has been emitted (contenttype: "application/simple-message-summary"). It **must** be answered with a voicemail event. When voicemail has been updated this event is also used - but with no ref id added to it.
+Once the subscriptions event for voicemail has been emitted (contenttype: "application/simple-message-summary"). It **must** be answered with a voicemail event. When voicemail has been updated this event is also used.
 
 ```json
 {
-  "ref": 123,
   "entity": "1000@bling.babblevoice.com",
   "newcount": 0,
   "oldcount": 0,

@@ -44,7 +44,6 @@ class Presence {
       this.options.em.on( "subscribe", ( s ) => {
         if( "application/simple-message-summary" === s.contenttype ) {
           this.options.em.emit( "voicemail", {
-            "ref": s.id,
             "entity": s.entity,
             "newcount": 0,
             "oldcount": 0,
