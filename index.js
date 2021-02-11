@@ -11,14 +11,7 @@ const dosubscribe = require( "./lib/dosubscribe" )
 const defaultoptions = {
   /* When a client registers - we subsribe to their status if they support it */
   "subscribeonregister": true,
-  "voicemailLookup": ( entity, cb ) => {
-    /* entity example 1000@bling.babblevoice.com */
-    var newount = 0
-    var oldcount = 0
-    var newurgent = 0
-    var oldurgent = 0
-    cb( newount, oldcount, newurgent, oldurgent )
-  }
+  "dummyvoicemail": true
 }
 
 class Presence {
@@ -45,6 +38,21 @@ class Presence {
 
     if( undefined === this.options.em ) {
       this.options.em = new events.EventEmitter()
+    }
+
+    if( this.options.dummyvoicemail ) {
+      this.options.em.on( "subscribe", ( s ) => {
+        if( "application/simple-message-summary" === s.contenttype ) {
+          this.options.em.emit( "voicemail", {
+            "ref": s.id,
+            "entity": s.entity,
+            "newcount": 0,
+            "oldcount": 0,
+            "newurgent": 0,
+            "oldurgent": 0
+          } )
+        }
+      } )
     }
 
     this.options.srf.use( "publish", publishgetuse.use( this.options ) )
