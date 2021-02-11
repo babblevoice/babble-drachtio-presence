@@ -69,3 +69,4 @@ If you create your own voicemail system, then you also have to set the option.du
 * An INVITE-Initiated Dialog Event Package for the Session Initiation Protocol (SIP) - [RFC 4235](https://tools.ietf.org/html/rfc4235)
 * SIP-Specific Event Notification - [RFC 6665](https://tools.ietf.org/html/rfc6665)
 * SIP Message Waiting [RFC 3842](https://tools.ietf.org/html/rfc3842)
+* XPIDF Data format - MS specific [A Data Format for Presence Using XML](https://tools.ietf.org/html/draft-rosenberg-impp-pidf-00)
