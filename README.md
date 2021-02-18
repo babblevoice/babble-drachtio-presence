@@ -19,13 +19,15 @@ I have looked at the documents we are provided with by clients and they are
 
 We can use presence information and our own tracking of calls ourselves to publish information dialog information via NOTIFY to all SUBSCRIPTIONS clients agree with us.
 
-## Structure
+## Events
 
-babble-drachtio-presence handles SUBSCRIPTIONs and renewals. It also listen out for PUBLISH events.
+Events are sent and received via the events object store in options.em. This can be supplied or if not a new object will be created when the presence object is created.
 
-### Subscription
+babble-drachtio-presence handles SUBSCRIPTIONs and renewals. It also listen out for PUBLISH events. It also subscribes to UACs to to receive NOTIFYs for DND.
 
-babble-drachtio-presence emits a "subscribe" event with a contenttype of "application/simple-message-summary". The structure supplied is
+### Subscription - subscribe.in
+
+babble-drachtio-presence emits a "presence.subscribe.in" event with a contenttype of "application/simple-message-summary". The structure supplied is
 
 ```json
 {
@@ -45,9 +47,9 @@ babble-drachtio-presence emits a "subscribe" event with a contenttype of "applic
 
 This is only fired when a new subscription is generated. When existing subscriptions are refreshed this is not fired. To conform to RFC these events must be responded to. Otherwise the initial NOTIFY which is a requirement is not sent. It is only fired to query the initial status for that entity. If we already have a status for that event type it will not be fired.
 
-### Voicemail
+### Voicemail - presence.voicemail.out
 
-Once the subscriptions event for voicemail has been emitted (contenttype: "application/simple-message-summary"). It **must** be answered with a voicemail event. When voicemail has been updated this event is also used.
+Once the subscriptions event for voicemail has been emitted (contenttype: "application/simple-message-summary"). It **must** be answered with a presence.voicemail.out event. When voicemail has been updated this event is also used.
 
 ```json
 {
@@ -61,12 +63,84 @@ Once the subscriptions event for voicemail has been emitted (contenttype: "appli
 
 If you create your own voicemail system, then you also have to set the option.dummyvoicemail = false. Dummyvoicemail can also be used as a reference for what needs sending.
 
+### Status
+
+Status is sent to us and sent to UACs as PIDF and XPIDF documents. We receive status documents from UACs and also understand if clients are registered or not (as well as other status information).
+
+#### From UACs - presence.status.in
+
+When we receive a NOTIFY or PUBLISH from a client, we emit information via the events object. We use presence.in - the presence object does not forward this information onto any watchers. For example, if we have 2 UACs registered against 1 account and we received a DND for one of those accounts we can update that registration with this information as it might be useful for other decision making. If all registrations are marked as DND then we then might want to send out a status of DND to all watchers. Information is parsed from PIDF (or XPIFD) and distilled into status, note, dnd and onthephone. I intend to use this mechanism for the registrar to get then generate the presence.out as required (based on all registrations for that account).
+
+```json
+{
+  "entity": "1000@bling.babblevoice.com",
+  "source": {
+    "event": "NOTIFY|PUBLISH"
+  },
+  "status": "open",
+  "note": "",
+  "dnd": false,
+  "onthephone": false
+}
+```
+
+#### From us - presence.status.out
+
+This object should be emitted to trigger a PIDF/XPIDF document to be generated and sent onto all watchers of that entity.
+
+```json
+{
+  "entity": "1000@bling.babblevoice.com",
+  "status": "open",
+  "note": "",
+  "dnd": false,
+  "onthephone": false
+}
+```
+
+### Dialogs
+
+When we receive a subscribe for application/dialog-info+xml then the presence module emits presence.subscribe.in, this should be responded with a presence.dialog.out.
+
+We send out Dialog information via presence. This module will look out for presence.dialog.out events. The presence module then creates the relevant dialog document and sends onto all watchers. This event takes most of it structure from RFC 4235.
+
+The update field should only be present if this is triggered by an event to that dialog. The all field is only provided if we have actual dialogs for that entity.
+
+```json
+{
+  "entity": "1000@bling.babblevoice.com",
+  "display": "Miss Piggy",
+  "update": <*dialog>,
+  "all": Set( <*dialogs> )
+}
+```
+Where a dialog has to provide the following interface
+
+```json
+{
+  "hasmedia": true,
+  "direction": "initiator|recipient",
+  "statestr": "trying|proceeding|early|confirmed|terminated",
+  "startat": 0,
+  "answeredat": 0,
+  "endat": 0,
+  "duration": 0,
+  "sip": { "callid": "" },
+  "remote": {
+    "display": "Kermit Frog",
+    "uri": ""
+  },
+}
+```
+
 ## Refs
 
 * Session Initiation Protocol (SIP) - [RFC 3261](https://tools.ietf.org/html/rfc3261)
 * Session Initiation Protocol (SIP)-Specific Event Notification (obsoleted by 6665) - [RFC 3265](https://tools.ietf.org/html/rfc3265)
 * Presence Information Data Format (PIDF) [RFC 3863](https://tools.ietf.org/html/rfc3863)
+* RPID: Rich Presence Extensions to the Presence Information Data Format (PIDF) [RFC 4480](https://tools.ietf.org/html/rfc4480)
 * An INVITE-Initiated Dialog Event Package for the Session Initiation Protocol (SIP) - [RFC 4235](https://tools.ietf.org/html/rfc4235)
 * SIP-Specific Event Notification - [RFC 6665](https://tools.ietf.org/html/rfc6665)
 * SIP Message Waiting [RFC 3842](https://tools.ietf.org/html/rfc3842)
 * XPIDF Data format - MS specific [A Data Format for Presence Using XML](https://tools.ietf.org/html/draft-rosenberg-impp-pidf-00)
+* Not currently supported - but should look at: [An Extensible Markup Language (XML) Based Format for Watcher Information](https://www.rfc-editor.org/rfc/rfc3858.html)

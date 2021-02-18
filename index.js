@@ -41,9 +41,9 @@ class Presence {
     }
 
     if( this.options.dummyvoicemail ) {
-      this.options.em.on( "subscribe", ( s ) => {
+      this.options.em.on( "presence.subscribe.in", ( s ) => {
         if( "application/simple-message-summary" === s.contenttype ) {
-          this.options.em.emit( "voicemail", {
+          this.options.em.emit( "presence.voicemail.out", {
             "entity": s.entity,
             "newcount": 0,
             "oldcount": 0,
@@ -69,6 +69,8 @@ class Presence {
       /* Remove any subscriptions we have on the phone */
       this.options.registrar.on( "unregister", dosubscribe.unreg( this.options ) )
     }
+
+    this.subscriptions = onsubscribe.subscriptions
   }
 
   on( ev, cb ) {
