@@ -4,7 +4,7 @@
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test.js"
+    "test": "./node_modules/mocha/bin/mocha --recursive --check-leaks"
   },
   "repository": {
     "type": "git",
@@ -22,10 +22,12 @@
   },
   "homepage": "https://github.com/tinpotnick/babble-drachtio-presence#readme",
   "dependencies": {
+    "chai": "^4.3.6",
     "crypto": "^1.0.1",
     "drachtio-mw-digest-auth": "^0.3.3",
     "drachtio-srf": "^4.4.47",
     "fast-xml-parser": "^3.18.0",
-    "he": "^1.2.0"
+    "he": "^1.2.0",
+    "mocha": "^9.2.2"
   }
 }
