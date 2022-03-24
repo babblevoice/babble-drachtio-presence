@@ -1,5 +1,7 @@
 # babble-drachtio-presence
 
+Work in progress!
+
 A presence agent which will work with other modules in this family.
 
 Presence is a little more tricky as different clients use slightly different mechanisms for advertising their state. For example, Zoiper5 uses SIP PUBLISH to announce its state. If you want to discover if a Zoiper5 client has DND enabled (and be alerted to when it is triggered) then we have to listen out for PUBLISH events. Polycom phones (a VVX 101 for example) require us to subscribe to the phone and then listen for a NOTIFY.
@@ -15,7 +17,7 @@ I have looked at the documents we are provided with by clients and they are
 * application/xpidf+xml (although I am not sure if this is a Polycom specific thing)
 * application/dialog-info+xml
 * application/simple-message-summary - [RFC 3842](https://tools.ietf.org/html/rfc3842)
-* application/watcherinfo+xml - [RFC 3842](https://tools.ietf.org/html/rfc3842) - I am not oing to support this just yet
+* application/watcherinfo+xml - [RFC 3842](https://tools.ietf.org/html/rfc3842) - I am not going to support this just yet
 
 We can use presence information and our own tracking of calls ourselves to publish information dialog information via NOTIFY to all SUBSCRIPTIONS clients agree with us.
 

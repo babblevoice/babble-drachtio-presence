@@ -24,7 +24,6 @@
   "dependencies": {
     "chai": "^4.3.6",
     "crypto": "^1.0.1",
-    "drachtio-mw-digest-auth": "^0.3.3",
     "drachtio-srf": "^4.4.47",
     "fast-xml-parser": "^3.18.0",
     "he": "^1.2.0",
