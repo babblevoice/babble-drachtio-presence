@@ -355,7 +355,7 @@ opaque="${a._opaque}"`
     expect( store.get( username + "@" + realm ) ).to.be.false
 
     /* We MUST emit an event */
-    expect( emited.e ).to.equal( "presence.subscribe.in" )
+    expect( emited.e ).to.equal( "presence.voicemail.in" )
     expect( emited.info.contenttype ).to.equal( "application/simple-message-summary" )
     expect( emited.info.entity ).to.equal( "bob@biloxi.com" )
     expect( emited.info.expires ).to.equal( 30 )

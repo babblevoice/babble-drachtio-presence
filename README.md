@@ -2,6 +2,11 @@
 
 Work in progress!
 
+- [x] Voicemail
+- [ ] Dialog
+- [ ] Status
+- [ ] Improve modularity of dosubscribe and test storage for leaks
+
 A presence agent which will work with other modules in this family.
 
 Presence is a little more tricky as different clients use slightly different mechanisms for advertising their state. For example, Zoiper5 uses SIP PUBLISH to announce its state. If you want to discover if a Zoiper5 client has DND enabled (and be alerted to when it is triggered) then we have to listen out for PUBLISH events. Polycom phones (a VVX 101 for example) require us to subscribe to the phone and then listen for a NOTIFY.
@@ -48,6 +53,18 @@ babble-drachtio-presence emits a "presence.subscribe.in" event with a contenttyp
 * expires...
 
 This is only fired when a new subscription is generated. When existing subscriptions are refreshed this is not fired. To conform to RFC these events must be responded to. Otherwise the initial NOTIFY which is a requirement is not sent. It is only fired to query the initial status for that entity. If we already have a status for that event type it will not be fired.
+
+### Voicemail - presence.voicemail.in
+
+We receive a subscription for voicemail so we emit this event. Something **must** respond with presence.voicemail.out.
+
+```json
+{
+  "contenttype": "application/simple-message-summary",
+  "entity": "1000@bling.babblevoice.com",
+  "expires": 30
+}
+```
 
 ### Voicemail - presence.voicemail.out
 
