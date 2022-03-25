@@ -1,7 +1,7 @@
 
 
 const expect = require( "chai" ).expect
-const store = require( "../../lib/store.js" )
+const store = require( "../../lib/uasstore.js" )
 
 describe( "store.spec.js", function() {
 

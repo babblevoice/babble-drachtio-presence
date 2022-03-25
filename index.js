@@ -3,9 +3,9 @@ const assert = require( "assert" )
 const events = require( "events" )
 
 
-const onsubscribe = require( "./lib/onsubscribe" )
+const uassubscribe = require( "./lib/uassubscribe" )
 const publishgetuse = require( "./lib/onpublish" )
-const dosubscribe = require( "./lib/dosubscribe" )
+const uacsubscribe = require( "./lib/uacsubscribe" )
 
 
 const defaultoptions = {
@@ -55,7 +55,7 @@ class Presence {
     }
 
     this.options.srf.use( "publish", publishgetuse.use( this.options ) )
-    this.options.srf.use( "subscribe", onsubscribe.use( this.options ) )
+    this.options.srf.use( "subscribe", uassubscribe.use( this.options ) )
 
     /*
       This next section is listening to our registrar for registrations then
@@ -64,19 +64,16 @@ class Presence {
     if ( this.options.subscribeonregister &&
           undefined !== this.options.registrar ) {
 
-      this.options.registrar.on( "register", dosubscribe.reg( this.options ) )
+      this.options.em.on( "register", uacsubscribe.reg( this.options ) )
 
       /* Remove any subscriptions we have on the phone */
-      this.options.registrar.on( "unregister", dosubscribe.unreg( this.options ) )
+      this.options.em.on( "unregister", uacsubscribe.unreg( this.options ) )
     }
-
-    this.subscriptions = onsubscribe.subscriptions
   }
 
   on( ev, cb ) {
     this.options.em.on( ev, cb )
   }
 }
-
 
 module.exports = Presence

@@ -2,8 +2,8 @@
 
 const expect = require( "chai" ).expect
 const sipauth = require( "babble-drachtio-auth" ).auth
-const subscription = require( "../../lib/subscription.js" )
-const store = require( "../../lib/store.js" )
+const subscription = require( "../../lib/uassubscription.js" )
+const store = require( "../../lib/uasstore.js" )
 
 describe( "subscription.spec.js", function() {
 
