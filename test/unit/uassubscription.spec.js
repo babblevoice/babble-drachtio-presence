@@ -1,7 +1,7 @@
 
 
 const expect = require( "chai" ).expect
-const sipauth = require( "babble-drachtio-auth" ).auth
+const sipauth = require( "babble-drachtio-auth" )
 const subscription = require( "../../lib/uassubscription.js" )
 const store = require( "../../lib/uasstore.js" )
 
@@ -244,7 +244,7 @@ describe( "subscription.spec.js", function() {
     let cnonce = "0a4f113b"
     let method = "SUBSCRIBE"
 
-    let a = new sipauth()
+    let a = sipauth.create()
     let digest = a.calcauthhash( username, password, realm, uri, method, cnonce, "00000001" )
 
     let authstr = `Digest username="bob",
@@ -370,7 +370,7 @@ opaque="${a._opaque}"`
     let cnonce = "0a4f113b"
     let method = "SUBSCRIBE"
 
-    let a = new sipauth()
+    let a = sipauth.create()
     let digest = a.calcauthhash( username, password, realm, uri, method, cnonce, "00000001" )
 
     let authstr = `Digest username="bob",
@@ -441,7 +441,18 @@ opaque="${a._opaque}"`
           realm
         }
       },
-      proxy: false
+      proxy: false,
+      srf: {
+        createUAS: () => {
+          /* create UAS sends 202 */
+          code = 202
+          return {
+            on: () => {},
+            destroy: () => {}
+
+          }
+        }
+      },
     }
 
     let oursub = subscription.create( req, res, options )
