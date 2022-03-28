@@ -1,6 +1,6 @@
 # babble-drachtio-presence
 
-Work in progress!
+Work in progress.
 
 - [x] Voicemail
 - [ ] Dialog
@@ -8,6 +8,12 @@ Work in progress!
 - [ ] Improve modularity of dosubscribe and test storage for leaks
 
 A presence agent which will work with other modules in this family.
+
+* A UAC can SUBSCRIBE to us; we then NOTIFY information to the phone (dialog/voicemail etc)
+* We can SUBSCRIBE to a UAC (we are the UAS); we then receive NOTIFY on DND from the phone
+* A client can PUBLISH to us - I am leaving this out for the moment until I see more support other than Zoiper - which has issues anyway
+
+## Notes
 
 Presence is a little more tricky as different clients use slightly different mechanisms for advertising their state. For example, Zoiper5 uses SIP PUBLISH to announce its state. If you want to discover if a Zoiper5 client has DND enabled (and be alerted to when it is triggered) then we have to listen out for PUBLISH events. Polycom phones (a VVX 101 for example) require us to subscribe to the phone and then listen for a NOTIFY.
 
@@ -26,26 +32,33 @@ I have looked at the documents we are provided with by clients and they are
 
 We can use presence information and our own tracking of calls ourselves to publish information dialog information via NOTIFY to all SUBSCRIPTIONS clients agree with us.
 
-## Events
+### Status
+
+Status is sent to us and sent to UACs as PIDF and XPIDF documents. We receive status documents from UACs and also understand if clients are registered or not (as well as other status information).
+
+When we receive a register, we SUBSCRIBE to the UAC for PIDF to receive status.
+
+A UAC can SUBSCRIBE to us to receive PIDF (or XPIDF).
+
+## UAS Events
 
 Events are sent and received via the events object store in options.em. This can be supplied or if not a new object will be created when the presence object is created.
 
 babble-drachtio-presence handles SUBSCRIPTIONs and renewals. It also listen out for PUBLISH events. It also subscribes to UACs to to receive NOTIFYs for DND.
 
-### Subscription - subscribe.in
+### Subscription - presence.subscribe.in
 
-babble-drachtio-presence emits a "presence.subscribe.in" event with a contenttype of "application/simple-message-summary". The structure supplied is
+babble-drachtio-presence emits a "presence.subscribe.in" event with a contenttype . The structure supplied is
 
 ```json
 {
-  "contenttype": "application/simple-message-summary",
+  "contenttype": "application/pidf+xml",
   "entity": "1000@bling.babblevoice.com",
   "expires": 60
 }
 ```
 
 * contenttype contains the content type which the subscription has asked for
-  * "application/simple-message-summary": voicemail
   * "application/pidf+xml": status
   * "application/xpidf+xml": status (Polycom only?)
   * "application/dialog-info+xml": dialogs
@@ -56,7 +69,7 @@ This is only fired when a new subscription is generated. When existing subscript
 
 ### Voicemail - presence.voicemail.in
 
-We receive a subscription for voicemail so we emit this event. Something **must** respond with presence.voicemail.out.
+We receive a subscription for voicemail so we emit this event. Something **must** respond with presence.voicemail.out. The content type is simple-message-summary.
 
 ```json
 {
@@ -68,7 +81,7 @@ We receive a subscription for voicemail so we emit this event. Something **must*
 
 ### Voicemail - presence.voicemail.out
 
-Once the subscriptions event for voicemail has been emitted (contenttype: "application/simple-message-summary"). It **must** be answered with a presence.voicemail.out event. When voicemail has been updated this event is also used.
+Once the subscriptions event for voicemail has been emitted (presence.voicemail.in). It **must** be answered with a presence.voicemail.out event. When voicemail has been updated this event is also used. If it is not answered, then the client will not receive an initial response. Reason is supplied and should be either "init" or "update". Init is a response to presence.voicemail.in. Update is when something of interest happens required notifying.
 
 ```json
 {
@@ -76,32 +89,12 @@ Once the subscriptions event for voicemail has been emitted (contenttype: "appli
   "newcount": 0,
   "oldcount": 0,
   "newurgent": 0,
-  "oldurgent": 0
+  "oldurgent": 0,
+  "reason": "init"
 }
 ```
 
 If you create your own voicemail system, then you also have to set the option.dummyvoicemail = false. Dummyvoicemail can also be used as a reference for what needs sending.
-
-### Status
-
-Status is sent to us and sent to UACs as PIDF and XPIDF documents. We receive status documents from UACs and also understand if clients are registered or not (as well as other status information).
-
-#### From UACs - presence.status.in
-
-When we receive a NOTIFY or PUBLISH from a client, we emit information via the events object. We use presence.in - the presence object does not forward this information onto any watchers. For example, if we have 2 UACs registered against 1 account and we received a DND for one of those accounts we can update that registration with this information as it might be useful for other decision making. If all registrations are marked as DND then we then might want to send out a status of DND to all watchers. Information is parsed from PIDF (or XPIFD) and distilled into status, note, dnd and onthephone. I intend to use this mechanism for the registrar to get then generate the presence.out as required (based on all registrations for that account).
-
-```json
-{
-  "entity": "1000@bling.babblevoice.com",
-  "source": {
-    "event": "NOTIFY|PUBLISH"
-  },
-  "status": "open",
-  "note": "",
-  "dnd": false,
-  "onthephone": false
-}
-```
 
 #### From us - presence.status.out
 
@@ -151,6 +144,29 @@ Where a dialog has to provide the following interface
   },
 }
 ```
+
+## UAC Events
+
+### presence.status.in
+
+When we receive a NOTIFY from a client, we emit information via the events object. We use presence.in - the presence object does not forward this information onto any watchers. For example, if we have 2 UACs registered against 1 account and we received a DND for one of those accounts we can update that registration with this information as it might be useful for other decision making. If all registrations are marked as DND then we then might want to send out a status of DND to all watchers. Information is parsed from PIDF (or XPIFD) and distilled into status, note, dnd and onthephone. I intend to use this mechanism for the registrar to get then generate the presence.out as required (based on all registrations for that account).
+
+```json
+{
+  "entity": "1000@bling.babblevoice.com",
+  "source": {
+    "event": "NOTIFY"
+  },
+  "status": "open",
+  "note": "",
+  "dnd": false,
+  "onthephone": false
+}
+```
+
+## PUBLISH
+
+In my first version I did start to implement PUBLISH - but in order to get going I decided to simplify and remove for now. Most functions should be able to be supported with SUBSCRIBE.
 
 ## Refs
 
