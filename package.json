@@ -1,5 +1,5 @@
 {
-  "name": "babble-drachtio-presence",
+  "name": "@tinpotnick/babble-drachtio-presence",
   "version": "1.0.0",
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
@@ -28,5 +28,10 @@
     "fast-xml-parser": "^3.18.0",
     "he": "^1.2.0",
     "mocha": "^9.2.2"
-  }
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "devDependencies": {}
 }
