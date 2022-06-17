@@ -1,5 +1,5 @@
 {
-  "name": "@tinpotnick/babble-drachtio-presence",
+  "name": "@babblevoice/babble-drachtio-presence",
   "version": "1.0.0",
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
