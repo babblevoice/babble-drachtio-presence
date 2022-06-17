@@ -1,6 +1,6 @@
 {
   "name": "@babblevoice/babble-drachtio-presence",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/tinpotnick/babble-drachtio-presence#readme",
   "dependencies": {
+    "@babblevoice/babble-drachtio-auth": "^1.0.0",
     "chai": "^4.3.6",
     "crypto": "^1.0.1",
     "drachtio-srf": "^4.4.47",
@@ -32,6 +33,5 @@
   "directories": {
     "lib": "lib",
     "test": "test"
-  },
-  "devDependencies": {}
+  }
 }
