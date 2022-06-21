@@ -1,7 +1,7 @@
 
 
 const expect = require( "chai" ).expect
-const sipauth = require( "babble-drachtio-auth" )
+const sipauth = require( "@babblevoice/babble-drachtio-auth" )
 const subscription = require( "../../lib/uassubscription.js" )
 const store = require( "../../lib/uasstore.js" )
 
