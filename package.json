@@ -1,6 +1,6 @@
 {
   "name": "@babblevoice/babble-drachtio-presence",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
   "scripts": {
@@ -24,7 +24,6 @@
   "dependencies": {
     "@babblevoice/babble-drachtio-auth": "^1.0.0",
     "chai": "^4.3.6",
-    "crypto": "^1.0.1",
     "drachtio-srf": "^4.4.47",
     "fast-xml-parser": "^3.18.0",
     "he": "^1.2.0",
