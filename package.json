@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/tinpotnick/babble-drachtio-presence#readme",
   "dependencies": {
-    "@babblevoice/babble-drachtio-auth": "^1.0.0",
+    "@babblevoice/babble-drachtio-auth": "^1.0.1",
     "chai": "^4.3.6",
     "drachtio-srf": "^4.4.47",
     "fast-xml-parser": "^3.18.0",
