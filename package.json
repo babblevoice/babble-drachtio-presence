@@ -1,6 +1,6 @@
 {
   "name": "@babblevoice/babble-drachtio-presence",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
   "scripts": {
