@@ -73,6 +73,11 @@ describe( "store.spec.js", function() {
     store.set( subs[ 2 ] )
     expect( store.stats().bysubscribed ).to.equal( 2 )
 
+    let subbedusers = store.getsubs()
+    expect( subbedusers.length ).to.equal( 2 )
+    expect( subbedusers[ 0 ] ).to.equal( "user@host" )
+    expect( subbedusers[ 1 ] ).to.equal( "user2@host" )
+
     let ouruser = store.get( "user@host" )
     expect( ouruser.size ).to.equal( 2 )
 

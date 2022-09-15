@@ -37,6 +37,9 @@ class Presence {
 
     this.uacsub = uacsubscribe.create( this.options )
   }
+
+  static uacstore = require( "./lib/uacstore" )
+  static uasstore = require( "./lib/uasstore" )
 }
 
 module.exports = Presence
