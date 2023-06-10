@@ -100,7 +100,8 @@ entity="sip:1000@bling.babblevoice.com;transport=UDP">
 </tuple>
 </presence>`
 
-    let zoip = presence.parsepidfxml( "application/pidf+xml", zoiper5publish )
+    const zoip = presence.parsepidfxml( "application/pidf+xml", zoiper5publish )
+
     expect( zoip.status ).to.equal( "open" )
     expect( zoip.note ).to.equal( "Online" )
     expect( zoip.dnd ).to.be.false
@@ -124,7 +125,8 @@ PUBLIC "-//IETF//DTD RFCxxxx XPIDF 1.0//EN" "xpidf.dtd">
 </atom>
 </presence>`
 
-    let poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
+    const poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
+
     expect( poly.onthephone ).to.be.false
     expect ( poly.dnd ).to.be.false
     expect( poly.status ).to.equal( "open" )
@@ -147,7 +149,7 @@ PUBLIC "-//IETF//DTD RFCxxxx XPIDF 1.0//EN" "xpidf.dtd">
 </atom>
 </presence>`
 
-    let poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
+    const poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
     expect( poly.onthephone ).to.be.true
     expect ( poly.dnd ).to.be.false
   } )
@@ -167,20 +169,23 @@ PUBLIC "-//IETF//DTD RFCxxxx XPIDF 1.0//EN" "xpidf.dtd">
 </atom>
 </presence>`
 
-    let poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
+    const poly = presence.parsepidfxml( "application/xpidf+xml", polycomvvx101 )
     expect( poly.onthephone ).to.be.true
     expect ( poly.dnd ).to.be.true
   } )
 
   it( "Generate pdif parse and check 1", function() {
-    let ourgenerated = presence.parsepidfxml( "application/pidf+xml", presence.genpidfxml( "1000@bling.babblevoice.com", "closed" ) )
+    const ourxml = presence.genpidfxml( "1000@bling.babblevoice.com", "closed" )
+    const ourgenerated = presence.parsepidfxml( "application/pidf+xml", ourxml )
+
+    expect( ourxml ).to.equal( "<presence xmlns=\"urn:ietf:params:xml:ns:pidf\" xmlns:dm=\"urn:ietf:params:xml:ns:pidf:data-model\" xmlns:rpid=\"urn:ietf:params:xml:ns:pidf:rpid\" xmlns:c=\"urn:ietf:params:xml:ns:pidf:cipid\" entity=\"sip:1000@bling.babblevoice.com\"><tuple id=\"t6a5ed77e\"><status><basic>closed</basic></status></tuple><dm:person id=\"p06360c4a\"></dm:person></presence>" )
     expect( ourgenerated.dnd ).to.be.true
     expect( ourgenerated.onthephone ).to.be.false
     expect( ourgenerated.status ).to.equal( "closed" )
   } )
 
   it( "Generate pdif parse and check 2", function() {
-    let ourgenerated = presence.parsepidfxml( "application/pidf+xml", presence.genpidfxml( "1000@bling.babblevoice.com", "closed", "Talk 077660000111", "on-the-phone" ) )
+    const ourgenerated = presence.parsepidfxml( "application/pidf+xml", presence.genpidfxml( "1000@bling.babblevoice.com", "closed", "Talk 077660000111", "on-the-phone" ) )
     expect( ourgenerated.dnd ).to.be.false
     expect( ourgenerated.onthephone ).to.be.true
     expect( ourgenerated.status ).to.equal( "open" )
