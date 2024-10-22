@@ -14,48 +14,50 @@ describe( "subscription.spec.js", function() {
   it( "create - expires in contact", async function() {
 
     let code
-    let req = {
+    const req = {
       uri: "sip:1000@mydomain.com",
       getParsedHeader: ( hdr ) => {
 
         switch( hdr.toLowerCase() ) {
-          case "contact":
-            return [
-              { 
-                params: {
-                  expires: 60
-                }
+        case "contact":
+          return [
+            { 
+              params: {
+                expires: 60
               }
-            ]
-
-          case "from":
-            return {
-              uri: "sip:1000@mydomain.com"
             }
+          ]
+
+        case "from":
+          return {
+            uri: "sip:1000@mydomain.com"
+          }
         }
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "expires": 
-            return "61"
+        case "expires": 
+          return "61"
         }
+      },
+      has: () => {
+        return false
       }
     }
 
-    let res = {
+    const res = {
       send: async ( c ) => {
         code = c
       }
     }
 
-    let options = {
-      userlookup: async ( username, realm ) => {
-        return
+    const options = {
+      userlookup: async ( /* username, realm */ ) => {
       },
       proxy: false
     }
 
-    let oursub = subscription.create( req, res, options )
+    const oursub = subscription.create( req, res, options )
 
     expect( code ).to.equal( 401 )
     expect( oursub.expires ).to.equal( 60 )
@@ -66,47 +68,47 @@ describe( "subscription.spec.js", function() {
   it( "create - expires in header", async function() {
 
     let code
-    let req = {
+    const req = {
       uri: "sip:1000@mydomain.com",
       getParsedHeader: ( hdr ) => {
 
         switch( hdr.toLowerCase() ) {
-          case "contact":
-            return [
-              { 
-                params: {
-                }
+        case "contact":
+          return [
+            { 
+              params: {
               }
-            ]
-
-          case "from":
-            return {
-              uri: "sip:1000@mydomain.com"
             }
+          ]
+
+        case "from":
+          return {
+            uri: "sip:1000@mydomain.com"
+          }
         }
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "expires": 
-            return "30"
+        case "expires": 
+          return "30"
         }
-      }
+      },
+      has: () => { return false }
     }
 
-    let res = {
+    const res = {
       send: async ( c ) => {
         code = c
       }
     }
 
-    let options = {
-      userlookup: async ( username, realm ) => {
-        return
+    const options = {
+      userlookup: async ( /* username, realm */ ) => {
       },
       proxy: false
     }
 
-    let oursub = subscription.create( req, res, options )
+    const oursub = subscription.create( req, res, options )
 
     expect( code ).to.equal( 401 )
     expect( oursub.expires ).to.equal( 30 )
@@ -118,55 +120,56 @@ describe( "subscription.spec.js", function() {
   it( "create - callid search", async function() {
 
     let code
-    let req = {
+    const req = {
       uri: "sip:1000@mydomain.com",
       source_address: "192.168.0.2",
       source_port: "5444",
       getParsedHeader: ( hdr ) => {
 
         switch( hdr.toLowerCase() ) {
-          case "contact":
-            return [
-              { 
-                params: {
-                  expires: 60
-                }
+        case "contact":
+          return [
+            { 
+              params: {
+                expires: 60
               }
-            ]
-
-          case "from":
-            return {
-              uri: "sip:1000@mydomain.com"
             }
+          ]
+
+        case "from":
+          return {
+            uri: "sip:1000@mydomain.com"
+          }
         }
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "expires": 
-            return "61"
-          case "call-id":
-            return "656565"
+        case "expires": 
+          return "61"
+        case "call-id":
+          return "656565"
         }
-      }
+      },
+      has: ()=> { return false }
     }
 
-    let res = {
+    const res = {
       send: async ( c ) => {
         code = c
       }
     }
 
-    let options = {
-      userlookup: async ( username, realm ) => {
-        return
+    const options = {
+      userlookup: async ( /* username, realm */ ) => {
       },
       proxy: false
     }
 
-    let oursub = subscription.create( req, res, options )
+    const oursub = subscription.create( req, res, options )
 
     expect( code ).to.equal( 401 )
     expect( oursub.expires ).to.equal( 60 )
+    // @ts-ignore
     expect( oursub._fqcallid ).to.equal( "656565@192.168.0.2:5444" )
 
     expect( store.get( "656565@192.168.0.2:5444" ).callid ).to.equal( "656565" )
@@ -182,50 +185,49 @@ describe( "subscription.spec.js", function() {
   it( "create and fail auth", async function() {
 
     let code
-    let req = {
+    const req = {
       uri: "sip:1000@mydomain.com",
       getParsedHeader: ( hdr ) => {
 
         switch( hdr.toLowerCase() ) {
-          case "contact":
-            return [
-              { 
-                params: {
-                }
+        case "contact":
+          return [
+            { 
+              params: {
               }
-            ]
-
-          case "from":
-            return {
-              uri: "sip:1000@mydomain.com"
             }
+          ]
+
+        case "from":
+          return {
+            uri: "sip:1000@mydomain.com"
+          }
         }
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "expires": 
-            return "30"
+        case "expires": 
+          return "30"
         }
       },
-      has: ( hdr ) => {
+      has: ( /* hdr */ ) => {
         return false
       } 
     }
 
-    let res = {
+    const res = {
       send: async ( c ) => {
         code = c
       }
     }
 
-    let options = {
-      userlookup: async ( username, realm ) => {
-        return
+    const options = {
+      userlookup: async ( /* username, realm */ ) => {
       },
       proxy: false
     }
 
-    let oursub = subscription.create( req, res, options )
+    const oursub = subscription.create( req, res, options )
 
     expect( code ).to.equal( 401 )
     expect( oursub.expires ).to.equal( 30 )
@@ -237,17 +239,17 @@ describe( "subscription.spec.js", function() {
   } )
 
   it( "create and pass auth", async function() {
-    let username = "bob"
-    let password = "zanzibar"
-    let realm = "biloxi.com"
-    let uri = "sip:bob@biloxi.com"
-    let cnonce = "0a4f113b"
-    let method = "SUBSCRIBE"
+    const username = "bob"
+    const password = "zanzibar"
+    const realm = "biloxi.com"
+    const uri = "sip:bob@biloxi.com"
+    const cnonce = "0a4f113b"
+    const method = "SUBSCRIBE"
 
-    let a = sipauth.create()
-    let digest = a.calcauthhash( username, password, realm, uri, method, cnonce, "00000001" )
+    const a = sipauth.create()
+    const digest = a.calcauthhash( username, password, realm, uri, method, cnonce, "00000001" )
 
-    let authstr = `Digest username="bob",
+    const authstr = `Digest username="bob",
 realm="${realm}",
 nonce="${a._nonce}",
 uri="${uri}",
@@ -259,56 +261,59 @@ response="${digest}",
 opaque="${a._opaque}"`
 
     let code
-    let req = {
+    let haveauth = false
+    const req = {
       uri,
       msg: { uri, method },
       getParsedHeader: ( hdr ) => {
 
         switch( hdr.toLowerCase() ) {
-          case "contact":
-            return [
-              { 
-                params: {
-                }
+        case "contact":
+          return [
+            { 
+              params: {
               }
-            ]
-
-          case "from":
-            return {
-              uri
             }
+          ]
+
+        case "from":
+          return {
+            uri
+          }
         }
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "expires": 
-            return "30"
+        case "expires": 
+          return "30"
 
-          case "authorization":
-            return authstr
+        case "authorization":
+          return authstr
 
-          case "accept":
-            return "application/simple-message-summary"
+        case "accept":
+          return "application/simple-message-summary"
         }
       },
       has: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "authorization":
-            return true
-          default:
-            return false
+        case "authorization": {
+          if( !haveauth ) return false
+          return true
+        }
+        default:
+          return false
         }
       } 
     }
 
-    let res = {
-      send: async ( c ) => {
+    const res = {
+      send: async ( c, /* e */ ) => {
         code = c
       }
     }
 
-    let emited = {}
-    let options = {
+    const emited = {}
+    const options = {
       userlookup: async ( username, realm ) => {
         return {
           username,
@@ -336,7 +341,8 @@ opaque="${a._opaque}"`
       }
     }
 
-    let oursub = subscription.create( req, res, options )
+    const oursub = subscription.create( req, res, options )
+    haveauth = true
 
     expect( code ).to.equal( 401 )
     expect( oursub.expires ).to.equal( 30 )
@@ -363,17 +369,17 @@ opaque="${a._opaque}"`
 
 
   it( "create and pass auth but bad accept", async function() {
-    let username = "bob"
-    let password = "zanzibar"
-    let realm = "biloxi.com"
-    let uri = "sip:bob@biloxi.com"
-    let cnonce = "0a4f113b"
-    let method = "SUBSCRIBE"
+    const username = "bob"
+    const password = "zanzibar"
+    const realm = "biloxi.com"
+    const uri = "sip:bob@biloxi.com"
+    const cnonce = "0a4f113b"
+    const method = "SUBSCRIBE"
 
-    let a = sipauth.create()
-    let digest = a.calcauthhash( username, password, realm, uri, method, cnonce, "00000001" )
+    const a = sipauth.create()
+    const digest = a.calcauthhash( username, password, realm, uri, method, cnonce, "00000001" )
 
-    let authstr = `Digest username="bob",
+    const authstr = `Digest username="bob",
 realm="${realm}",
 nonce="${a._nonce}",
 uri="${uri}",
@@ -385,55 +391,59 @@ response="${digest}",
 opaque="${a._opaque}"`
 
     let code
-    let req = {
+    let haveauth = false
+    const req = {
       uri,
       msg: { uri, method },
       getParsedHeader: ( hdr ) => {
 
         switch( hdr.toLowerCase() ) {
-          case "contact":
-            return [
-              { 
-                params: {
-                }
+        case "contact":
+          return [
+            { 
+              params: {
               }
-            ]
-
-          case "from":
-            return {
-              uri
             }
+          ]
+
+        case "from":
+          return {
+            uri
+          }
         }
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "expires": 
-            return "30"
+        case "expires": 
+          return "30"
 
-          case "authorization":
-            return authstr
+        case "authorization":
+          return authstr
 
-          case "accept":
-            return "application/nonsense"
+        case "accept":
+          return "application/nonsense"
         }
       },
       has: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-          case "authorization":
-            return true
-          default:
-            return false
+        case "authorization": {
+          if( !haveauth ) return false
+          return true
+        }
+          
+        default:
+          return false
         }
       }
     }
 
-    let res = {
+    const res = {
       send: async ( c ) => {
         code = c
       }
     }
 
-    let options = {
+    const options = {
       userlookup: async ( username, realm ) => {
         return {
           username,
@@ -455,7 +465,7 @@ opaque="${a._opaque}"`
       },
     }
 
-    let oursub = subscription.create( req, res, options )
+    const oursub = subscription.create( req, res, options )
 
     expect( code ).to.equal( 401 )
     expect( oursub.expires ).to.equal( 30 )
@@ -463,6 +473,7 @@ opaque="${a._opaque}"`
     oursub._auth._opaque = a._opaque
     oursub._auth._nonce = a._nonce
 
+    haveauth = true
     await oursub._update( req, res )
     expect( code ).to.equal( 406 )
 

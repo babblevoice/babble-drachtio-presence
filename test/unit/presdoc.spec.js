@@ -178,7 +178,7 @@ PUBLIC "-//IETF//DTD RFCxxxx XPIDF 1.0//EN" "xpidf.dtd">
     const ourxml = presence.genpidfxml( "1000@bling.babblevoice.com", "closed" )
     const ourgenerated = presence.parsepidfxml( "application/pidf+xml", ourxml )
 
-    expect( ourxml ).to.equal( "<presence xmlns=\"urn:ietf:params:xml:ns:pidf\" xmlns:dm=\"urn:ietf:params:xml:ns:pidf:data-model\" xmlns:rpid=\"urn:ietf:params:xml:ns:pidf:rpid\" xmlns:c=\"urn:ietf:params:xml:ns:pidf:cipid\" entity=\"sip:1000@bling.babblevoice.com\"><tuple id=\"t6a5ed77e\"><status><basic>closed</basic></status></tuple><dm:person id=\"p06360c4a\"></dm:person></presence>" )
+    expect( ourxml ).to.equal( "<?xml version=\"1.0\" encoding=\"UTF-8\"?><presence xmlns=\"urn:ietf:params:xml:ns:pidf\" xmlns:dm=\"urn:ietf:params:xml:ns:pidf:data-model\" xmlns:rpid=\"urn:ietf:params:xml:ns:pidf:rpid\" xmlns:c=\"urn:ietf:params:xml:ns:pidf:cipid\" entity=\"sip:1000@bling.babblevoice.com\"><tuple id=\"t6a5ed77e\"><status><basic>closed</basic></status></tuple><dm:person id=\"p06360c4a\"></dm:person></presence>" )
     expect( ourgenerated.dnd ).to.be.true
     expect( ourgenerated.onthephone ).to.be.false
     expect( ourgenerated.status ).to.equal( "closed" )
