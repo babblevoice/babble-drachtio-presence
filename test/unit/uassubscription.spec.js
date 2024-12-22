@@ -285,7 +285,7 @@ opaque="${a._opaque}"`
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
         case "expires": 
-          return "30"
+          return "90"
 
         case "authorization":
           return authstr
@@ -345,7 +345,7 @@ opaque="${a._opaque}"`
     haveauth = true
 
     expect( code ).to.equal( 401 )
-    expect( oursub.expires ).to.equal( 30 )
+    expect( oursub.expires ).to.equal( 90 )
 
     oursub._auth._opaque = a._opaque
     oursub._auth._nonce = a._nonce
@@ -364,7 +364,7 @@ opaque="${a._opaque}"`
     expect( emited.e ).to.equal( "presence.voicemail.in" )
     expect( emited.info.contenttype ).to.equal( "application/simple-message-summary" )
     expect( emited.info.entity ).to.equal( "bob@biloxi.com" )
-    expect( emited.info.expires ).to.equal( 30 )
+    expect( emited.info.expires ).to.equal( 90 )
   } )
 
 
@@ -415,7 +415,7 @@ opaque="${a._opaque}"`
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
         case "expires": 
-          return "30"
+          return "90"
 
         case "authorization":
           return authstr
@@ -468,7 +468,7 @@ opaque="${a._opaque}"`
     const oursub = subscription.create( req, res, options )
 
     expect( code ).to.equal( 401 )
-    expect( oursub.expires ).to.equal( 30 )
+    expect( oursub.expires ).to.equal( 90 )
 
     oursub._auth._opaque = a._opaque
     oursub._auth._nonce = a._nonce
