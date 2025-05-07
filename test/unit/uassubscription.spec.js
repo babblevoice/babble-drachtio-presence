@@ -36,17 +36,23 @@ describe( "subscription.spec.js", function() {
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-        case "expires": 
-          return "61"
+        case "expires": return "60"
+        case "contact": return ""
+        case "call-id": return "123"
         }
       },
-      has: () => {
+      has: ( hdr ) => {
+        switch( hdr.toLowerCase() ) {
+        case "expires": return true
+        case "contact": return true
+        case "call-id": return true
+        }
         return false
       }
     }
 
     const res = {
-      send: async ( c ) => {
+      send: async ( c /*, s */ ) => {
         code = c
       }
     }
@@ -89,11 +95,19 @@ describe( "subscription.spec.js", function() {
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-        case "expires": 
-          return "30"
+        case "expires": return "30"
+        case "contact": return ""
+        case "call-id": return "123"
         }
       },
-      has: () => { return false }
+      has: ( hdr ) => { 
+        switch( hdr.toLowerCase() ) {
+        case "expires": return true
+        case "contact": return true
+        case "call-id": return true
+        }
+        return false 
+      }
     }
 
     const res = {
@@ -144,13 +158,19 @@ describe( "subscription.spec.js", function() {
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-        case "expires": 
-          return "61"
-        case "call-id":
-          return "656565"
+        case "expires": return "60"
+        case "call-id": return "656565"
+        case "contact": return ""
         }
       },
-      has: ()=> { return false }
+      has: ( hdr )=> {
+        switch( hdr.toLowerCase() ) {
+        case "expires": return true
+        case "contact": return true
+        case "call-id": return true
+        }
+        return false 
+      }
     }
 
     const res = {
@@ -206,11 +226,17 @@ describe( "subscription.spec.js", function() {
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-        case "expires": 
-          return "30"
+        case "expires": return "30"
+        case "contact": return ""
+        case "call-id": return "123"
         }
       },
-      has: ( /* hdr */ ) => {
+      has: ( hdr ) => {
+        switch( hdr.toLowerCase() ) {
+        case "expires": return true
+        case "contact": return true
+        case "call-id": return true
+        }
         return false
       } 
     }
@@ -284,14 +310,11 @@ opaque="${a._opaque}"`
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-        case "expires": 
-          return "90"
-
-        case "authorization":
-          return authstr
-
-        case "accept":
-          return "application/simple-message-summary"
+        case "expires": return "90"
+        case "authorization": return authstr
+        case "accept": return "application/simple-message-summary"
+        case "contact": return ""
+        case "call-id": return "123"
         }
       },
       has: ( hdr ) => {
@@ -300,6 +323,10 @@ opaque="${a._opaque}"`
           if( !haveauth ) return false
           return true
         }
+        case "expires": return true
+        case "contact": return true
+        case "call-id": return true
+        case "accept": return true
         default:
           return false
         }
@@ -414,14 +441,10 @@ opaque="${a._opaque}"`
       },
       get: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
-        case "expires": 
-          return "90"
-
-        case "authorization":
-          return authstr
-
-        case "accept":
-          return "application/nonsense"
+        case "expires": return "90"
+        case "authorization": return authstr
+        case "accept": return "application/nonsense"
+        case "call-id": return "123"
         }
       },
       has: ( hdr ) => {
@@ -430,6 +453,10 @@ opaque="${a._opaque}"`
           if( !haveauth ) return false
           return true
         }
+        case "expires": return true
+        case "contact": return true
+        case "call-id": return true
+        case "accept": return true
           
         default:
           return false
