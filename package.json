@@ -4,7 +4,7 @@
   "description": "A presence agent which will work with other modules in this family.",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha --recursive --check-leaks"
+    "test": "mocha --recursive --check-leaks"
   },
   "repository": {
     "type": "git",
@@ -24,14 +24,14 @@
   "dependencies": {
     "@babblevoice/babble-drachtio-auth": "^1.0.1",
     "drachtio-srf": "^4.4.47",
-    "fast-xml-parser": "^4.2.4",
+    "fast-xml-parser": "^5.3.5",
     "he": "^1.2.0"
   },
   "devDependencies": {
-    "mocha": "^9.2.2",
     "chai": "^4.3.6",
     "eslint": "^8.42.0",
-    "eslint-plugin-promise": "^6.1.1"
+    "eslint-plugin-promise": "^6.1.1",
+    "mocha": "^11.7.5"
   },
   "directories": {
     "lib": "lib",
