@@ -21,7 +21,7 @@ describe( "subscription.spec.js", function() {
         switch( hdr.toLowerCase() ) {
         case "contact":
           return [
-            { 
+            {
               params: {
                 expires: 60
               }
@@ -46,6 +46,7 @@ describe( "subscription.spec.js", function() {
         case "expires": return true
         case "contact": return true
         case "call-id": return true
+        case "from": return true
         }
         return false
       }
@@ -81,7 +82,7 @@ describe( "subscription.spec.js", function() {
         switch( hdr.toLowerCase() ) {
         case "contact":
           return [
-            { 
+            {
               params: {
               }
             }
@@ -100,13 +101,14 @@ describe( "subscription.spec.js", function() {
         case "call-id": return "123"
         }
       },
-      has: ( hdr ) => { 
+      has: ( hdr ) => {
         switch( hdr.toLowerCase() ) {
         case "expires": return true
         case "contact": return true
         case "call-id": return true
+        case "from": return true
         }
-        return false 
+        return false
       }
     }
 
@@ -143,7 +145,7 @@ describe( "subscription.spec.js", function() {
         switch( hdr.toLowerCase() ) {
         case "contact":
           return [
-            { 
+            {
               params: {
                 expires: 60
               }
@@ -168,8 +170,9 @@ describe( "subscription.spec.js", function() {
         case "expires": return true
         case "contact": return true
         case "call-id": return true
+        case "from": return true
         }
-        return false 
+        return false
       }
     }
 
@@ -212,7 +215,7 @@ describe( "subscription.spec.js", function() {
         switch( hdr.toLowerCase() ) {
         case "contact":
           return [
-            { 
+            {
               params: {
               }
             }
@@ -236,9 +239,10 @@ describe( "subscription.spec.js", function() {
         case "expires": return true
         case "contact": return true
         case "call-id": return true
+        case "from": return true
         }
         return false
-      } 
+      }
     }
 
     const res = {
@@ -296,7 +300,7 @@ opaque="${a._opaque}"`
         switch( hdr.toLowerCase() ) {
         case "contact":
           return [
-            { 
+            {
               params: {
               }
             }
@@ -327,10 +331,11 @@ opaque="${a._opaque}"`
         case "contact": return true
         case "call-id": return true
         case "accept": return true
+        case "from": return true
         default:
           return false
         }
-      } 
+      }
     }
 
     const res = {
@@ -427,7 +432,7 @@ opaque="${a._opaque}"`
         switch( hdr.toLowerCase() ) {
         case "contact":
           return [
-            { 
+            {
               params: {
               }
             }
@@ -457,7 +462,8 @@ opaque="${a._opaque}"`
         case "contact": return true
         case "call-id": return true
         case "accept": return true
-          
+        case "from": return true
+
         default:
           return false
         }
